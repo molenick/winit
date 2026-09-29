@@ -894,6 +894,10 @@ os_capabilities! {
     #[allow(unused)] // error message unused
     force_touch_err_msg: "-[UITouch force]",
     force_touch: 9-0,
+    /// <https://developer.apple.com/documentation/uikit/uiscene?language=objc>
+    #[allow(unused)] // error message unused
+    scenes_err_msg: "UIScene",
+    scenes: 13-0,
 }
 
 fn meets_requirements(

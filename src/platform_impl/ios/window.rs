@@ -10,7 +10,7 @@ use objc2_foundation::{
 };
 use objc2_ui_kit::{
     UIApplication, UICoordinateSpace, UIResponder, UIScreen, UIScreenOverscanCompensation,
-    UIViewController, UIWindow,
+    UIViewController, UIWindow, UIWindowScene,
 };
 use tracing::{debug, warn};
 
@@ -83,6 +83,15 @@ impl WinitUIWindow {
         let this: Retained<Self> = unsafe { msg_send_id![mtm.alloc(), initWithFrame: frame] };
 
         this.setRootViewController(Some(view_controller));
+
+        // Windows in apps that adopt the scene life cycle are only shown once attached to a scene.
+        if app_state::os_capabilities().scenes && unsafe { this.windowScene() }.is_none() {
+            let scenes = unsafe { UIApplication::sharedApplication(mtm).connectedScenes() };
+            let scene = scenes.iter().find(|scene| scene.isKindOfClass(UIWindowScene::class()));
+            // SAFETY: Just checked that the scene is a `UIWindowScene`.
+            let scene = scene.map(|scene| unsafe { &*(scene as *const _ as *const UIWindowScene) });
+            unsafe { this.setWindowScene(scene) };
+        }
 
         match window_attributes.fullscreen.clone().map(Into::into) {
             Some(Fullscreen::Exclusive(ref video_mode)) => {
